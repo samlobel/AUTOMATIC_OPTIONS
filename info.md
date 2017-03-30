@@ -19,3 +19,11 @@ Input is the state, output is the actions. Takes in an energy function, that tak
 #### The Glue
 This still isn't related to the true value function. It's just a way to train a lot of these in succession. Has something like an array of (Energy, DQN) tuples. Can call a "train_next" function, that creates an energy function that's the negative-sum of all the other ones, then trains a DQN based on this, and then trains an energy-model based on the newly-trained model.
 
+
+___
+
+How do I use this to actually get better? I'm honestly not sure. How about I learn how to stand still...
+
+
+Or, how about I just learn how to maximize reward, that shouldn't be so hard. 
+

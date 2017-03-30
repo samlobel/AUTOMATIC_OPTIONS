@@ -1,0 +1,4 @@
+*.TXT
+extraneous/*
+.DS_Store
+*.pyc
