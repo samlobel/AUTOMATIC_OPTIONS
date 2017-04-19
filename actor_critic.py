@@ -38,6 +38,7 @@ class ActorCritic(object):
         self.ID = random_string(10)
         self.state_dim = state_dim
         self.action_dim = action_dim
+        self.final_activation = final_activation
         self.action_bound = action_bound
         self.GAMMA = GAMMA
         self.lr = lr
@@ -58,23 +59,33 @@ class ActorCritic(object):
         for s, a, r, rs in zip(states, actions, rewards, resulting_states):
             self.replay_buffer.add(s, a, r, rs)
 
-    def get_batch(self):
-        return self.replay_buffer.sample_batch(self.training_batch_size)
+    def get_batch(self, training_batch_size=None):
+        if not training_batch_size:
+            training_batch_size = self.training_batch_size
+        return self.replay_buffer.sample_batch(training_batch_size)
 
-    def train_from_replay_buffer(self):
+    def train_from_replay_buffer(self, should_print=False):
         # small trouble: if it's done, you don't want to run this thing on it.
         # I takes the new state, I predict an action, I predict that pair's q val,
         # I do: reward + GAMMA*next_q_val. I then do critic.optimize_q_val
+        if not self.replay_buffer.size():
+            print('buffer empty!')
+            return 0
         states, actions, rewards, resulting_states = self.replay_buffer.sample_batch(
             self.training_batch_size)
         predicted_action = self.actor.get_actions(resulting_states)
         predicted_vals = self.critic.predict_q_val(resulting_states,
                                                    predicted_action)
         true_vals = rewards + (self.GAMMA * predicted_vals)
-
+        # print(true_vals[4])
         losses = self.critic.optimize_q_val(states, actions, true_vals)
-        grads = self.critic.get_action_grads(states_in, actions_in)
+        grads = self.critic.get_action_grads(states, actions)
         self.actor.train_from_batch(states, grads)
+        return losses
+        if should_print:
+            actual_q, out = self.critic.return_q_and_out(states, actions, true_vals)
+            print('ACTUAL_Q: {}\n\n'.format(actual_q))
+            print('OUT: {}'.format(out))
         return losses
 
     def get_actions(self, states):

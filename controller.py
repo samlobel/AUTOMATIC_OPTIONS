@@ -36,6 +36,8 @@ class StateController(object):
                  lr=0.001,
                  replay_buffer_size=1024):
 
+        new_state_dim = 2 * state_dim
+        self.state_dim = state_dim
         self.AC = ActorCritic(
             new_state_dim,
             action_dim,
@@ -69,6 +71,9 @@ class StateController(object):
     def get_actions(self, states, goal_states):
         combined_states = np.concatenate((states, goal_states), 1)
         return self.AC.get_actions(combined_states)
+
+    def get_random_visited_state(self):
+        return self.AC.get_batch(1)[0][0][0:self.state_dim]
 
 
 class GoalController(object):
@@ -107,5 +112,3 @@ class GoalController(object):
 
     def get_goal_state(self, current_states):
         return self.AC.get_actions(current_states)
-
-

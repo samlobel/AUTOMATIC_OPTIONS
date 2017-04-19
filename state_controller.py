@@ -12,6 +12,8 @@ class StateController(object):
                  lr=0.001,
                  replay_buffer_size=1024):
 
+        self.state_dim = state_dim
+
         self.AC = ActorCritic(
             new_state_dim,
             action_dim,
@@ -45,3 +47,7 @@ class StateController(object):
     def get_actions(self, states, goal_states):
         combined_states = np.concatenate((states, goal_states), 1)
         return self.AC.get_actions(combined_states)
+
+    def get_visited_state(self):
+        return self.replay_buffer.get_batch()[0][0]
+        

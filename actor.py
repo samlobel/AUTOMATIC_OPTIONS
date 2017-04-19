@@ -3,6 +3,7 @@ import tensorflow as tf
 import prettytensor as pt
 import string
 import random
+import re
 
 
 def random_string(N):
@@ -45,14 +46,14 @@ class Actor(object):
             self.lr_var = tf.placeholder(tf.float32, [])
         all_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
         self.network_parameters = tf.get_collection(
-            tf.GraphKeys.GLOBAL_VARIABLES, scope=r".*Actor_model")
+            tf.GraphKeys.GLOBAL_VARIABLES, scope=r".*Actor_model.*")
 
     def construct_training(self):
         with tf.variable_scope('Actor_training') as scope:
             self.action_gradient = tf.placeholder(tf.float32,
-                                                  [None, self.action_dim])
+                                                  [None, self.action_dim], name='action_gradient')
             self.actor_gradient = tf.gradients(
-                self.out, self.network_parameters, -1 * self.action_gradient)
+                self.out, self.network_parameters, -1 * self.action_gradient, name='actor_gradient')
             zipped_grads_and_params = zip(self.actor_gradient,
                                           self.network_parameters)
             self.train = tf.train.AdamOptimizer(self.lr_var)\
@@ -61,7 +62,7 @@ class Actor(object):
 
     def initialize_session(self):
         variables = tf.get_collection(
-            tf.GraphKeys.GLOBAL_VARIABLES, scope=self.ID)
+            tf.GraphKeys.GLOBAL_VARIABLES, scope=r'.*' + self.ID + '.*')
         init = tf.variables_initializer(variables)
         sess = tf.Session()
         sess.run(init)
